@@ -1,0 +1,4 @@
+# The below will change default of all `out` (output feature map) to use Q8 quantizers.
+
+[LAYER]
+out: q, 8

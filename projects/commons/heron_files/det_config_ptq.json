@@ -1,0 +1,42 @@
+{
+    "hardware_param": {
+        "target_platform": "SA6920",
+        "sram_size": 1,
+        "data_format": "NV12",
+        "binary_eltwise_mode": 0
+    },
+	"calibration_image_num": 200,
+    "input_model_type": "ONNX",
+    "feature_quant": {
+        "quantization_method": "KLASYM"
+    },
+    "weight_quant": {
+        "quantization_method": "MAX_ABS"
+    },
+    "inputs_list": [
+        {
+            "color_space": "RGB",
+            "mean": [
+                0,
+                0,
+                0
+            ],
+            "normal": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "shape": [
+                1,
+                3,
+                640,
+                640
+            ],
+            "layout": "NCHW",
+            "dataset_path": "/mnt/ssd/coco/val2017",
+            "type": "uint8",
+            "format": "image",
+            "fuse_preprocess": true
+        }
+    ]
+}

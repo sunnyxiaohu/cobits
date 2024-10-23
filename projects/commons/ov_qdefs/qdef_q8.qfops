@@ -1,0 +1,10 @@
+# The below will change default of all `cw` to use Q8 quantizers.
+
+[CONV]
+cw: q, 8
+
+[FULLYCONNECTED]
+cw: q, 8
+
+[DECONV]
+cw: q, 8
