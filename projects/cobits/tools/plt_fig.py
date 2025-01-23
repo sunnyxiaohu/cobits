@@ -4,6 +4,21 @@ import scienceplots
 import matplotlib.pyplot as plt
 from scipy.stats import norm, kendalltau, spearmanr
 plt.style.use(['science', 'ieee'])
+plt.rcParams['font.family'] = 'Times New Roman'
+
+
+
+categories = ["All-share", "Spe-norm", "Spe-attn", "Spe-ffn", "All-spe"]
+swin_data = {
+    'Top1 Acc (%)': [80.8, 80.8, 81.0, 81.0, 81.3],
+    'mAP (%)': [39.0, 39.4, 41.2, 42.4, 43.2],
+    'mIoU (%)': [45.8, 45.5, 44.7, 44.5, 43.9]
+}
+autoformer_data = {
+    'Top1 Acc (%)': [81.9, 82.0, 82.1, 82.2, 82.5],
+    'mAP (%)': [44.1, 44.3, 44.8, 45.2, 44.9],
+    'mIoU (%)': [48.1, 48.0, 47.3, 46.7, 47.1]
+}
 
 def plot_scatter_with_lines(data, labels, x_labels, save_path=None):
     plt.rcParams.update({'font.size': 22})
@@ -134,7 +149,8 @@ def plot_curve_with_fill(split=2, save_path=None):
 
 
 def plot_bits_sensitive(bits_file, layer_index_map, sensitive_file=None,
-                        speedup_file=None, save_path=None):  
+                        speedup_file=None, save_path=None, backend='S0'):  
+    fontsize=14
     bits = mmengine.load(bits_file)
     w_bits, a_bits = [], []
     for w_name, a_name in layer_index_map:
@@ -151,14 +167,16 @@ def plot_bits_sensitive(bits_file, layer_index_map, sensitive_file=None,
     ax1.bar(x, w_bits, tick_label=labels, color='skyblue', label='Weight')  # weight
     ax1.bar(x, -np.array(a_bits), color='salmon', label='Activation') # activation
     # ax1.get_yaxis().set_visible(False)
+    ax1.tick_params(axis='x', labelsize=fontsize-4.5)
     ax1.tick_params(axis='y', which='both', labelleft=False)
-    ax1.set_xlabel('Layer Number (Backend S0)')
+    ax1.set_xlabel(f'Layer Number (Backend {backend})', fontsize=fontsize)
     # ax1.set_ylabel('Bit-widths')
     # ax1.set_ylabel('Sensitivity')
     # # bit_ranges = range(-8, 9)
     # # yticks = [str(abs(val)) for val in bit_ranges]
     # # ax1.set_yticks(bit_ranges, yticks)
-    ax1.legend(loc='center left')
+    ax1.legend(loc='upper left', fontsize=fontsize, bbox_to_anchor=(-0.25, 0.9))
+    # fig.autofmt_xdate()
 
     if sensitive_file is not None:
         sensitive = mmengine.load(sensitive_file)
@@ -176,7 +194,8 @@ def plot_bits_sensitive(bits_file, layer_index_map, sensitive_file=None,
         ax2.plot(x, -np.array(a_sensitive), color='blue', marker='o', alpha=0.7, label='Activatoin Sensitivity')
         # ax2.set_ylabel('Sensitivity')  # , color='green')
         # ax2.tick_params('y', colors='green')
-        ax2.legend(loc='lower center')
+        ax2.tick_params(labelsize=fontsize)
+        ax2.legend(loc='upper left', fontsize=fontsize, bbox_to_anchor=(-0.25, 0.6))
 
     if speedup_file is not None:
         speedup = mmengine.load(speedup_file)
@@ -190,12 +209,14 @@ def plot_bits_sensitive(bits_file, layer_index_map, sensitive_file=None,
         assert len(w_speedup) == len(a_speedup)
         # 创建第二个 y 轴来绘制折线图
         ax3 = ax2.twinx()
-        ax3.plot(x, w_speedup, color='yellow', marker='o', alpha=0.7, label='BitOps Speed-UP')
-        ax3.plot(x, -np.array(a_speedup), color='yellow', marker='o', alpha=0.7)
-        ax3.set_ylabel('BitOps Speed-UP')
+        ax3.plot(x, w_speedup, color='black', marker='o', alpha=0.7, label='BitOps Speed-UP')
+        ax3.plot(x, -np.array(a_speedup), color='black', marker='o', alpha=0.7, label='BitOps Speed-UP')
+        ax3.set_ylabel('BitOps Speed-UP', fontsize=fontsize)
         # yticks = [str(abs(val)) for val in bit_ranges]
         # ax1.set_yticks(bit_ranges, yticks)
-        ax3.legend(loc='upper center')
+        ax3.tick_params(labelsize=fontsize)
+        ax3.legend(loc='upper left', fontsize=fontsize, bbox_to_anchor=(-0.25, 0.3))
+        # ax3.add_artist(legend3)
 
     if save_path:
         plt.savefig(save_path, bbox_inches='tight')
@@ -402,7 +423,7 @@ plot_bits_sensitive('/home/wangshiguang/mnodes/NAS-MQBench/mmrazor/work_dirs/cob
                     layer_index_map=ResNet18_S0_LAYER_INDEX_MAP,
                     sensitive_file=ResNet18_S0_Sensitive_FILE,
                     speedup_file=ResNet18_S0_SPEEDUP_FILE,
-                    save_path='ResNet18-4bit-S0.png')
+                    save_path='ResNet18-4bit-S0.png', backend='S0')
 # plot_bits_sensitive('/home/wangshiguang/mnodes/NAS-MQBench/mmrazor/work_dirs/cobits_snpe_resnet18_search_8xb64_in1k/20240207_071927/best_fix_subnet.yaml',
 #                     layer_index_map=ResNet18_S1_LAYER_INDEX_MAP,
 #                     sensitive_file=ResNet18_S1_Sensitive_FILE,
@@ -412,7 +433,7 @@ plot_bits_sensitive('/home/wangshiguang/mnodes/NAS-MQBench/mmrazor/work_dirs/cob
                     layer_index_map=ResNet18_S1_LAYER_INDEX_MAP,
                     sensitive_file=ResNet18_S1_Sensitive_FILE,
                     speedup_file=ResNet18_S1_SPEEDUP_FILE,
-                    save_path='ResNet18-4bit-S1.png')
+                    save_path='ResNet18-4bit-S1.png', backend='S1')
 
 
 # plot_bits_sensitive('/home/wangshiguang/mnodes/NAS-MQBench/mmrazor/work_dirs/cobits_weightonly_mbv2_search_8xb64_in1k/20240207_142833/best_fix_subnet.yaml',
@@ -422,13 +443,13 @@ plot_bits_sensitive('/home/wangshiguang/mnodes/NAS-MQBench/mmrazor/work_dirs/cob
                     layer_index_map=MBV2_S0_LAYER_INDEX_MAP,
                     sensitive_file=MobileNetV2_S0_Sensitive_FILE,
                     speedup_file=MobileNetV2_S0_SPEEDUP_FILE,                    
-                    save_path='MobileNetV2-4bit-S0.png')
+                    save_path='MobileNetV2-4bit-S0.png', backend='S0')
 
 plot_bits_sensitive('/home/wangshiguang/mnodes/NAS-MQBench/mmrazor/work_dirs/cobits_snpe_mbv2_search_8xb64_in1k/20240218_084405/best_fix_subnet.yaml',
                     layer_index_map=MBV2_S1_LAYER_INDEX_MAP,
                     sensitive_file=MobileNetV2_S1_Sensitive_FILE,
                     speedup_file=MobileNetV2_S1_SPEEDUP_FILE,                    
-                    save_path='MobileNetV2-4bit-S1.png')
+                    save_path='MobileNetV2-4bit-S1.png', backend='S1')
 
 
 def calculate_rank_correlation(matrix_files, save_path=None):
